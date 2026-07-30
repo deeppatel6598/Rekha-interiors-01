@@ -1095,6 +1095,9 @@ input, select, textarea, button { font-family: var(--font-text); max-width: 100%
 
 .hero__card {
   margin-top: auto;
+  /* Hugs its content rather than always filling 420px — the card now holds
+     one short line, and a stretched box would sit half empty over the photo. */
+  width: fit-content;
   max-width: 420px;
   background: color-mix(in srgb, var(--canvas-parchment) 88%, transparent);
   backdrop-filter: var(--blur-frosted);
