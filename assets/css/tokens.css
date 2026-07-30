@@ -1,12 +1,12 @@
 /* ==========================================================================
-   Rekha Interiors — design tokens
+   Samiksha Warde Designs — design tokens
    --------------------------------------------------------------------------
    One source of truth for colour, type, space, radius, elevation and motion.
    Nothing in site.css may introduce a raw hex or a magic duration; if a value
    is needed twice it belongs here.
 
    Derived from DESIGN-apple.md (photography-first, one accent, one shadow)
-   and re-grounded on the Rekha brand ramp sampled from the studio mark.
+   and re-grounded for Samiksha Warde Designs.
    Every foreground/background pair below is annotated with its measured
    WCAG contrast ratio.
    ========================================================================== */
@@ -20,8 +20,8 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* ------------------------------------------------------------ brand ramp
-     Sampled from the Rekha Interiors mark. Display use only — the ratios
-     below govern which of these may carry text. */
+     A cool teal-to-leaf ramp, used for accents and display only — the
+     ratios below govern which of these may carry text. */
   --brand-sky-100: #a0e0f0;
   --brand-sky-300: #60c0f0;
   --brand-cyan-500: #00a0b0;

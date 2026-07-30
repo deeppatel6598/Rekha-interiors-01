@@ -154,5 +154,5 @@ those two grids are empty without it; everything else is in the HTML.
 
 `DESIGN-apple.md` is the original specification — a photography-first system with edge-to-edge
 tiles alternating light and dark, one interactive colour, and a single drop shadow reserved for
-product imagery. This site keeps that structure and re-grounds it on the Rekha brand ramp sampled
-from the studio mark, with the contrast corrections listed in §1.
+product imagery. This site keeps that structure and applies the contrast corrections listed in §1.
+
