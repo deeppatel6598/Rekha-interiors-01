@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Rekha Interiors — site styles
+   Samiksha Warde Designs — site styles
    --------------------------------------------------------------------------
    Order:  1 reset · 2 typography · 3 layout · 4 motion · 5 chrome
            6 components · 7 page-specific · 8 responsive
@@ -294,7 +294,6 @@ input, select, textarea, button { font-family: var(--font-text); max-width: 100%
 .stack > .photo-row,
 .stack > .service-list,
 .stack > .spec-list,
-.stack > .timeline,
 .stack > .faq,
 .stack > .filters,
 .stack > .demo-box,
@@ -747,7 +746,14 @@ input, select, textarea, button { font-family: var(--font-text); max-width: 100%
   align-items: center;
   gap: clamp(12px, 1.6vw, 24px);
   margin-left: auto;
+  /* Safety net for a page whose section list is longer than the bar: the
+     row scrolls rather than having its last links clipped by the edge. */
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 0;
 }
+.subnav__links::-webkit-scrollbar { display: none; }
 .subnav__links a {
   font-size: var(--fs-button-utility);
   letter-spacing: var(--ls-button-utility);
@@ -1375,29 +1381,6 @@ input, select, textarea, button { font-family: var(--font-text); max-width: 100%
 .section--dark-2 .spec-list li,
 .section--dark-3 .spec-list li { color: var(--on-dark-muted); }
 
-/* --- award band ----------------------------------------------------------- */
-
-.award-photos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: clamp(0.75rem, 1.6vw, 1.25rem);
-}
-.award-photos img {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-photo);
-}
-
-.award-meta {
-  font-size: var(--fs-caption);
-  line-height: var(--lh-caption);
-  letter-spacing: var(--ls-eyebrow);
-  text-transform: uppercase;
-  color: var(--on-dark-muted);
-}
-
 /* --- cards ---------------------------------------------------------------- */
 
 .card-grid {
@@ -1692,41 +1675,6 @@ a.info-card:hover {
   color: var(--ink-muted-80);
   text-wrap: pretty;
 }
-
-/* --- timeline -------------------------------------------------------------- */
-
-.timeline {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-.timeline li {
-  display: grid;
-  grid-template-columns: minmax(88px, 128px) 1fr;
-  gap: clamp(1rem, 3vw, 2rem);
-  padding: clamp(1.125rem, 2.4vw, 1.5rem) 0;
-  border-top: var(--border-hairline);
-  align-items: start;
-}
-.timeline li:last-child { border-bottom: var(--border-hairline); }
-.timeline__year {
-  font-family: var(--font-display);
-  font-size: clamp(1.125rem, 1rem + 0.6vw, 1.5rem);
-  font-weight: 600;
-  color: var(--action);
-  font-variant-numeric: tabular-nums;
-}
-.timeline__body { display: flex; flex-direction: column; gap: 4px; }
-.timeline__title {
-  font-size: var(--fs-body);
-  font-weight: var(--fw-body-strong);
-  line-height: var(--lh-body-strong);
-  color: var(--ink);
-}
-.timeline__body p { font-size: var(--fs-caption); line-height: 1.55; color: var(--ink-muted-80); }
 
 /* --- accordion ------------------------------------------------------------- */
 
@@ -2173,7 +2121,6 @@ a.info-card:hover {
   .page-head,
   .detail-grid,
   .pager,
-  .award-photos { grid-template-columns: 1fr; }
 
   /* Flipping is a desktop-only device; stacked, it would reverse reading order. */
   .split--flip > *:first-child { order: 0; }
@@ -2182,8 +2129,6 @@ a.info-card:hover {
   .masonry { columns: 1; }
 
   .quote-form { grid-template-columns: 1fr; }
-
-  .timeline li { grid-template-columns: 1fr; gap: 6px; }
 
   .pager__link--next { text-align: left; align-items: flex-start; }
 

@@ -1,12 +1,16 @@
 /* ==========================================================================
-   Rekha Interiors — shared content data
+   Samiksha Warde Designs — shared content data
    --------------------------------------------------------------------------
-   PLACEHOLDER CONTENT. Every photograph referenced here is an Unsplash stock
-   image, and each project's area and year is illustrative — written so the
-   layouts can be judged at full length. Before going live, replace:
+   Project names are the studio's own, taken from its Instagram highlights.
+   Everything else marked below is PLACEHOLDER and must be replaced before
+   launch:
 
      · `id` / `img`   → paths to the studio's own photographs
+                        (every photo referenced here is an Unsplash stock
+                        image standing in for real work)
      · `area`, `year` → the real figures for each project
+     · `category`     → confirm which projects were full homes and which
+                        were styling-only
 
    Scope of this file: the card-level facts that appear in more than one
    place — the project grids on the home and projects pages, and the gallery.
@@ -25,86 +29,90 @@
   }
 
   var SHOTS = [
-    { id: '1600585154340-be6161a56a0c', room: 'Living',   title: 'Sofa wall, Baner' },
-    { id: '1600489000022-c2086d79f9d4', room: 'Kitchen',  title: 'Stone counter, Hinjewadi' },
-    { id: '1556909212-d5b604d0c90d',    room: 'Bedroom',  title: 'Master bedroom, NIBM Road' },
-    { id: '1583847268964-b28dc8f51f92', room: 'Wardrobe', title: 'Sliding wardrobe, Baner' },
+    { id: '1600585154340-be6161a56a0c', room: 'Living',   title: 'Sofa wall, Vihang Hills' },
+    { id: '1600489000022-c2086d79f9d4', room: 'Kitchen',  title: 'Stone counter, Lodha Palava' },
+    { id: '1556909212-d5b604d0c90d',    room: 'Bedroom',  title: 'Master bedroom, Hiranandani' },
+    { id: '1583847268964-b28dc8f51f92', room: 'Wardrobe', title: 'Sliding wardrobe, Vihang Hills' },
     { id: '1586023492125-27b2c045efd7', room: 'Living',   title: 'Open plan living and dining' },
-    { id: '1617806118233-18e1de247200', room: 'Kitchen',  title: 'Breakfast counter, Kharadi' },
-    { id: '1595526114035-0d45ed16cfbf', room: 'Bedroom',  title: 'Guest bedroom, Shankeshwar' },
-    { id: '1604709177225-055f99402ea3', room: 'Living',   title: 'TV unit in oak veneer' },
-    { id: '1616486338812-3dadae4b4ace', room: 'Living',   title: 'Riverfront flat, Pune' },
+    { id: '1617806118233-18e1de247200', room: 'Kitchen',  title: 'Breakfast ledge, Lodha Palava' },
+    { id: '1595526114035-0d45ed16cfbf', room: 'Bedroom',  title: 'Bedroom, Palava Fresca' },
+    { id: '1604709177225-055f99402ea3', room: 'Living',   title: 'Compact TV wall, Lodha Acme' },
+    { id: '1616486338812-3dadae4b4ace', room: 'Living',   title: 'Window wall, Lodha Venezia' },
     { id: '1616137466211-f939a420be84', room: 'Bathroom', title: 'Bath in fluted stone' },
-    { id: '1524758631624-e2822e304c36', room: 'Office',   title: 'Meeting room, Hinjewadi' },
-    { id: '1497366811353-6870744d04b2', room: 'Office',   title: 'Workstations, Baner' },
-    { id: '1505691938895-1758d7feb511', room: 'Bedroom',  title: 'Kids bedroom, NIBM Road' },
-    { id: '1631679706909-1844bbd07221', room: 'Kitchen',  title: 'Island kitchen, Balewadi' },
+    { id: '1524758631624-e2822e304c36', room: 'Living',   title: 'Styled corner, Thane' },
+    { id: '1497366811353-6870744d04b2', room: 'Living',   title: 'Console and mirror unit' },
+    { id: '1505691938895-1758d7feb511', room: 'Kids',     title: "Children's room, Lodha Venezia" },
+    { id: '1631679706909-1844bbd07221', room: 'Kitchen',  title: 'Island kitchen, Palava Fresca' },
     { id: '1493809842364-78817add7ffb', room: 'Living',   title: 'Reading corner' }
   ];
 
-  var ROOMS = ['All rooms', 'Living', 'Kitchen', 'Bedroom', 'Wardrobe', 'Bathroom', 'Office'];
+  var ROOMS = ['All rooms', 'Living', 'Kitchen', 'Bedroom', 'Wardrobe', 'Bathroom', 'Kids'];
+
+  /* The two groups the projects page filters on. */
+  var CATEGORIES = ['All work', 'Full home', 'Styling'];
 
   var PROJECTS = [
     {
-      slug: 'la-vida-baner',
-      title: 'La Vida, Baner',
-      category: 'Residential',
-      typology: '3 BHK apartment',
-      area: '1,450 sq ft',
+      slug: 'vihang-hills',
+      title: 'Vihang Hills, Thane',
+      category: 'Full home',
+      typology: '2 BHK apartment',
+      area: '1,050 sq ft',
       year: '2025',
       img: '1586023492125-27b2c045efd7'
     },
     {
-      slug: 'eon-homes-hinjewadi',
-      title: 'Eon Homes, Hinjewadi',
-      category: 'Residential',
+      slug: 'lodha-palava',
+      title: 'Lodha Palava, Dombivli',
+      category: 'Full home',
       typology: '2 BHK apartment',
-      area: '1,050 sq ft',
+      area: '980 sq ft',
       year: '2025',
       img: '1600489000022-c2086d79f9d4'
     },
     {
-      slug: 'nibm-road',
-      title: 'NIBM Road',
-      category: 'Residential',
+      slug: 'hiranandani-estate',
+      title: 'Hiranandani Estate, Thane',
+      category: 'Styling',
       typology: '3 BHK apartment',
-      area: '1,620 sq ft',
-      year: '2024',
+      area: '1,450 sq ft',
+      year: '2025',
       img: '1556909212-d5b604d0c90d'
     },
     {
-      slug: 'shankeshwar',
-      title: 'Shankeshwar',
-      category: 'Residential',
-      typology: '2 BHK apartment',
-      area: '980 sq ft',
+      slug: 'palava-fresca',
+      title: 'Palava Fresca, Dombivli',
+      category: 'Full home',
+      typology: '1 BHK apartment',
+      area: '640 sq ft',
       year: '2024',
       img: '1595526114035-0d45ed16cfbf'
     },
     {
-      slug: 'riverfront',
-      title: 'Riverfront',
-      category: 'Residential',
-      typology: '4 BHK apartment',
-      area: '2,300 sq ft',
-      year: '2025',
-      img: '1616486338812-3dadae4b4ace'
+      slug: 'lodha-acme',
+      title: 'Lodha Acme, Mumbai',
+      category: 'Styling',
+      typology: '2 BHK apartment',
+      area: '870 sq ft',
+      year: '2024',
+      img: '1604709177225-055f99402ea3'
     },
     {
-      slug: 'balewadi-office',
-      title: 'Balewadi office',
-      category: 'Commercial',
-      typology: 'Office fit-out',
-      area: '3,200 sq ft',
+      slug: 'lodha-venezia',
+      title: 'Lodha Venezia, Parel',
+      category: 'Full home',
+      typology: '3 BHK apartment',
+      area: '1,620 sq ft',
       year: '2025',
-      img: '1497366811353-6870744d04b2'
+      img: '1616486338812-3dadae4b4ace'
     }
   ];
 
-  global.REKHA = {
+  global.SITE_DATA = {
     unsplash: unsplash,
     SHOTS: SHOTS,
     ROOMS: ROOMS,
+    CATEGORIES: CATEGORIES,
     PROJECTS: PROJECTS
   };
 })(window);

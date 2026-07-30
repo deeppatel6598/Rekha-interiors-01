@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Rekha Interiors — behaviour
+   Samiksha Warde Designs — behaviour
    --------------------------------------------------------------------------
    Progressive enhancement throughout. Every page renders complete and
    readable with this file blocked; what follows adds motion, filtering and
@@ -24,7 +24,8 @@
     return Array.prototype.slice.call((scope || doc).querySelectorAll(sel));
   };
 
-  var DATA = window.REKHA || { SHOTS: [], ROOMS: [], PROJECTS: [], unsplash: function () { return ''; } };
+  var DATA = window.SITE_DATA ||
+    { SHOTS: [], ROOMS: [], CATEGORIES: [], PROJECTS: [], unsplash: function () { return ''; } };
   var BASE = body.dataset.root || '';
 
   /* ======================================================== 1. environment */
@@ -277,7 +278,7 @@
     var img = doc.createElement('img');
     img.className = 'project-card__image';
     img.src = DATA.unsplash(p.img, 800);
-    img.alt = p.title + ' — ' + p.typology + ' by Rekha Interiors, Pune';
+    img.alt = p.title + ' — ' + p.typology + ' by Samiksha Warde Designs';
     img.loading = 'lazy';
     img.width = 800;
     img.height = 600;
@@ -344,7 +345,9 @@
     var wrap = $('[data-project-filters]');
     if (!wrap) return;
 
-    var groups = ['All work', 'Residential', 'Commercial'];
+    var groups = DATA.CATEGORIES && DATA.CATEGORIES.length
+      ? DATA.CATEGORIES
+      : ['All work'];
     wrap.textContent = '';
 
     groups.forEach(function (name) {
@@ -448,7 +451,8 @@
 
       var img = doc.createElement('img');
       img.src = DATA.unsplash(shot.id, 900);
-      img.alt = shot.title + ' — ' + shot.room.toLowerCase() + ' interior by Rekha Interiors, Pune';
+      img.alt = shot.title + ' — ' + shot.room.toLowerCase() +
+        ' interior by Samiksha Warde Designs, Mumbai';
       img.loading = 'lazy';
       media.appendChild(img);
 
