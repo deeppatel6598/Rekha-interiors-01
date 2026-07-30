@@ -48,8 +48,15 @@ wrong, `services.html` and the FAQ are where to change it.
 
 ## Motion
 
-Scroll animations run in both directions: an element that leaves the viewport re-arms and replays
-its entrance from whichever edge it left by, so scrolling back up animates rather than snapping.
+**The home hero scrubs on scroll.** It pins while you scroll through it, cross-dissolving and
+pushing in through its photographs while the headline changes line by line. The scenes are the
+`HERO_SCENES` array in `assets/js/data.js` — swap the photos and lines there and nothing else needs
+touching. With JavaScript off, or under `prefers-reduced-motion`, it collapses to an ordinary
+one-photograph hero rather than leaving empty scroll behind.
+
+Scroll animations elsewhere run in both directions: an element that leaves the viewport re-arms and
+replays its entrance from whichever edge it left by, so scrolling back up animates rather than
+snapping.
 
 The layer covers scroll reveals (rise, left, right, scale, blur, photograph wipe), staggered grids,
 per-word headline reveals, a hero parallax, a scroll-progress bar, a header that retracts on the way
@@ -102,6 +109,11 @@ sequential heading levels.
   mark; every page and the favicon reference that one file.
 - **Photography.** Every interior shot is an Unsplash placeholder. Image ids live in
   `assets/js/data.js` for the grids and gallery, and inline in each page for the fixed images.
+- **Hero scenes.** The scrubbing hero runs on four placeholder photographs in `HERO_SCENES`
+  (`assets/js/data.js`). Replace them with the studio's own tour photos — four to six wide shots,
+  ideally moving through a home in the order someone would walk it. Scene one is also the page's
+  poster (it is the image in the HTML and the only one shown under reduced motion), so make it the
+  strongest frame. Keep each `line` to about five words; it is set at hero size.
 - **The enquiry form does not send anything yet.** Submitting it validates the fields and shows the
   confirmation panel, but no back end is wired up. Point it at a form service (Formspree, Netlify
   Forms, Basin) or your own endpoint.

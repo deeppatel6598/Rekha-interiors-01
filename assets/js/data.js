@@ -48,6 +48,44 @@
 
   var ROOMS = ['All rooms', 'Living', 'Kitchen', 'Bedroom', 'Wardrobe', 'Bathroom', 'Kids'];
 
+  /* ---------------------------------------------------------------- hero
+     The scroll-scrubbed hero on the home page. As the visitor scrolls
+     through the hero these cross-dissolve and push in, and `line` becomes
+     the headline for that scene.
+
+     THIS IS THE ONE PLACE TO SWAP IN THE STUDIO'S REAL TOUR PHOTOS.
+     Replace each `id` with a real photograph and adjust `line` to suit —
+     nothing else needs touching. Four to six wide shots work best, ideally
+     moving through a home in the order someone would walk it. Scene one is
+     also the page's poster: it is the image in the HTML, the one that shows
+     before any script runs, and the only one shown under reduced motion —
+     so make it the strongest frame.
+
+     Keep `line` short. It is set at the hero size, so anything past about
+     five words wraps to three lines on a phone. */
+  var HERO_SCENES = [
+    {
+      id: '1600585154340-be6161a56a0c',
+      alt: 'Living room in morning light, a Mumbai apartment styled by Samiksha Warde Designs',
+      line: 'Turning your house into a home'
+    },
+    {
+      id: '1600489000022-c2086d79f9d4',
+      alt: 'Modular kitchen with a honed stone counter',
+      line: 'Planned around how you live'
+    },
+    {
+      id: '1595526114035-0d45ed16cfbf',
+      alt: 'A styled bedroom with soft morning light',
+      line: 'Styled to the last shelf'
+    },
+    {
+      id: '1586023492125-27b2c045efd7',
+      alt: 'Open plan living and dining room',
+      line: 'Ready the day you move in'
+    }
+  ];
+
   /* The two groups the projects page filters on. */
   var CATEGORIES = ['All work', 'Full home', 'Styling'];
 
@@ -113,6 +151,7 @@
     SHOTS: SHOTS,
     ROOMS: ROOMS,
     CATEGORIES: CATEGORIES,
+    HERO_SCENES: HERO_SCENES,
     PROJECTS: PROJECTS
   };
 })(window);

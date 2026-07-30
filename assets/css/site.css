@@ -1049,15 +1049,6 @@ input, select, textarea, button { font-family: var(--font-text); max-width: 100%
   isolation: isolate;
 }
 
-.hero__media {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 21 / 9;
-  min-height: 470px;
-  max-height: 82vh;
-  object-fit: cover;
-}
-
 /* The scrim is what makes the headline legible over any photograph, rather
    than depending on the particular image being dark in the right places. */
 .hero__frame::after {
@@ -1143,6 +1134,100 @@ input, select, textarea, button { font-family: var(--font-text); max-width: 100%
 }
 @media (prefers-reduced-motion: reduce) {
   .hero__scroll-hint::after { animation: none; transform: scaleY(1); }
+}
+
+/* --- scroll-scrubbed hero -------------------------------------------------
+   The hero pins while the visitor scrolls through it: the photographs
+   cross-dissolve and push in, and the headline changes line by line in step
+   with them. Then the page releases and continues normally.
+
+   `position: sticky`, never `fixed` — that is what lets this coexist with the
+   site's own sticky header and scroll engine instead of fighting them. The
+   track's height IS the scroll budget, and it defaults to a single viewport
+   so that with JavaScript off the hero is simply the ordinary hero: one
+   photograph, one headline, no empty scroll. The script raises
+   `--hero-scenes` only once every frame has decoded. */
+
+.hero--scrub {
+  --hero-scenes: 1;
+  --hero-scene-h: 100svh;
+  --hero-top: var(--nav-height);
+  --hero-h: calc(100svh - var(--nav-height) - clamp(1rem, 3vw, 1.5rem));
+}
+
+.hero__track {
+  position: relative;
+  height: calc(var(--hero-scenes) * var(--hero-scene-h));
+}
+
+.hero--scrub .hero__frame {
+  position: sticky;
+  top: var(--hero-top);
+  height: var(--hero-h);
+  min-height: 440px;
+}
+
+.hero__layers {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.05);
+  will-change: opacity, transform;
+}
+/* Scene one carries this in the markup, so it is painted before any script
+   runs and stays the poster if none ever does. */
+.hero__layer.is-on { opacity: 1; }
+
+/* The headline lines share one grid cell, so the heading is as tall as its
+   tallest line and the lines stack instead of pushing each other around. */
+.hero--scrub .hero__title {
+  display: grid;
+  width: 100%;
+}
+.hero__line {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity var(--dur-2) var(--ease-standard);
+}
+.hero__line.is-on { opacity: 1; }
+
+/* Reuses the word-mask primitives from the reveal layer rather than
+   introducing a second set. */
+.js .hero__line .split-word {
+  transform: translate3d(0, 110%, 0);
+  transition: transform var(--dur-3) var(--ease-out) var(--wd, 0ms);
+}
+.js .hero__line.is-on .split-word { transform: none; }
+.js .hero__line.is-out .split-word { transform: translate3d(0, -110%, 0); }
+
+.hero__scroll-hint { transition: opacity var(--dur-2) var(--ease-standard); }
+
+@media (max-width: 860px) {
+  .hero--scrub {
+    /* Shorter dwell per scene: a phone should not need three full flicks to
+       clear the hero. */
+    --hero-scene-h: 82svh;
+    --hero-top: clamp(0.75rem, 3vw, 1rem);
+    --hero-h: calc(100svh - clamp(1.5rem, 6vw, 2rem));
+  }
+}
+
+/* No scrub under reduced motion: the track collapses to one viewport, the
+   first photograph stays up and the headline does not move. */
+@media (prefers-reduced-motion: reduce) {
+  .hero--scrub { --hero-scenes: 1 !important; }
+  .hero__layer { transform: none; }
+  .js .hero__line .split-word,
+  .js .hero__line.is-out .split-word { transform: none; }
 }
 
 /* Compact hero used by every page other than home. */
@@ -2089,7 +2174,6 @@ a.info-card:hover {
      reserved, or their first heading sits under the floating pill. */
   body:not([data-hero="full"]) .header-spacer { display: block; }
 
-  .hero__media { min-height: 440px; }
   .hero__title { margin-top: clamp(4.5rem, 13vw, 6rem); }
   .hero__scroll-hint { display: none; }
 
@@ -2139,7 +2223,6 @@ a.info-card:hover {
 }
 
 @media (max-width: 420px) {
-  .hero__media { min-height: 420px; }
   .mobile-header__name { font-size: 16px; }
   .stats { gap: 1.75rem; }
 }
