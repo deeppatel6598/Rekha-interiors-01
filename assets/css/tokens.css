@@ -183,6 +183,9 @@
   --nav-height: 52px;
   --subnav-height: 52px;
   --mobile-header-height: 74px;
+  /* The fixed enquiry bar's height. A token because anything that sits at
+     the bottom of the viewport has to reserve exactly this much to clear it. */
+  --sticky-bar-height: 64px;
 
   /* --------------------------------------------------------------- radius */
   --radius-none: 0px;

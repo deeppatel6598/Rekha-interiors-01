@@ -137,8 +137,10 @@ Three decisions worth knowing:
   scroll is disorienting to announce, so the moving lines are `aria-hidden` and the heading carries a
   stable `aria-label`.
 
-The enquiry bar waits out the hero rather than sitting on top of it — the hero pins for several
-viewports and already carries its own call to action.
+The enquiry bar is fixed to the bottom of the viewport, and a hero that fills that viewport for
+several screens would otherwise sit underneath it — on a phone it cut the hero's button in half. The
+foot of the hero reserves `--sticky-bar-height` instead, so both stay on screen together rather than
+one having to hide. Measured clearance: 21px on a phone, 27px on desktop, at every scroll position.
 
 ### Why the page transition is pure CSS
 

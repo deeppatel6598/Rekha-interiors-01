@@ -88,9 +88,6 @@
   var progressBar = $('.scroll-progress');
   var stickyBar = $('.sticky-bar');
   var parallaxEls = $$('[data-parallax]');
-  /* Null on every page but the home page — the enquiry bar only has to wait
-     for a hero that pins. */
-  var heroTrack = $('.hero--scrub .hero__track');
 
   var lastY = window.pageYOffset;
   var ticking = false;
@@ -130,14 +127,11 @@
 
     if (stickyBar) {
       /* Held back until the visitor has actually committed to the page, and
-         stood down again over the footer so it never covers it. It also waits
-         out the scrubbing hero: that hero pins for several viewports and
-         carries its own call to action, and the bar would otherwise sit on
-         top of it for the whole flight. */
+         stood down again over the footer so it never covers it. It stays up
+         across the scrubbing hero — the hero reserves the bar's height at its
+         foot (see --sticky-bar-height), so the two do not collide. */
       var nearEnd = max - y < 220;
-      var overHero = heroTrack &&
-        heroTrack.getBoundingClientRect().bottom > viewport * 0.5;
-      stickyBar.classList.toggle('is-stowed', overHero || y < viewport * 0.6 || nearEnd);
+      stickyBar.classList.toggle('is-stowed', y < viewport * 0.6 || nearEnd);
     }
 
     if (heroUpdate) heroUpdate();

@@ -1006,7 +1006,7 @@ input, select, textarea, button { font-family: var(--font-text); max-width: 100%
   right: 0;
   bottom: 0;
   z-index: var(--z-sticky-bar);
-  min-height: 64px;
+  min-height: var(--sticky-bar-height);
   display: flex;
   align-items: center;
   gap: var(--space-md);
@@ -1070,6 +1070,18 @@ input, select, textarea, button { font-family: var(--font-text); max-width: 100%
   pointer-events: none;
 }
 .hero__content > * { pointer-events: auto; }
+
+/* The enquiry bar is fixed to the bottom of the viewport and the scrubbing
+   hero fills that viewport for several screens, so the hero's own card would
+   sit underneath it — on a phone it cut the button in half. The foot of the
+   hero reserves the bar's exact height instead, which lets both stay on
+   screen together rather than one having to hide. Only on pages that carry
+   the bar. */
+body[data-sticky="on"] .hero--scrub .hero__content {
+  padding-bottom: calc(
+    var(--sticky-bar-height) + env(safe-area-inset-bottom, 0px) + 0.75rem
+  );
+}
 
 .hero__title {
   margin: clamp(3.5rem, 7vw, 5rem) auto 0;
