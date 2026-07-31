@@ -107,14 +107,40 @@ The direction is read from the IntersectionObserver entry and written to `data-f
 | `data-split` | Headline rises word by word, each in its own mask |
 | `data-count` | Counts up on entry, re-runs on re-entry |
 | `data-parallax="0.09"` | Image drifts against the scroll |
+| `data-hero-scrub` | The home hero pins and scrubs through its photographs |
 
 Timing follows Material's convention — entrances ease out over `--dur-3` (620ms), micro-interactions
 run 160–280ms, and grid children stagger 60ms apart. Only `transform`, `opacity`, `clip-path` and
 `filter` are animated; nothing here can trigger layout.
 
 Two things share a single `requestAnimationFrame` loop and a single `IntersectionObserver`: the
-scroll engine (progress bar, retracting header, enquiry bar, parallax) and the reveal engine. Adding
-more animated sections costs no additional listeners.
+scroll engine (progress bar, retracting header, enquiry bar, parallax, hero scrub) and the reveal
+engine. Adding more animated sections costs no additional listeners.
+
+### The scrubbing hero
+
+The home hero pins while you scroll through it: the photographs cross-dissolve and push in, and the
+headline changes line by line in step with them. Scenes live in `HERO_SCENES` in `assets/js/data.js`
+— that array is the whole configuration.
+
+Three decisions worth knowing:
+
+- **`position: sticky`, never `fixed`.** The obvious way to build this is a fixed stage over a tall
+  spacer, which is what the `scroll-world` engine this borrows from does. Fixed would fight the
+  site's own sticky header and scroll engine, so the frame sticks inside its track instead. The
+  track's height *is* the scroll budget.
+- **The track starts one viewport tall.** Scene one ships in the HTML; the script adds the rest and
+  only then raises `--hero-scenes`. So with scripting off the hero is just the hero — one
+  photograph, one headline, no acres of empty scroll — and the growth happens only while the visitor
+  is still near the top, so the page never lengthens under someone mid-read.
+- **The `<h1>` keeps one fixed accessible name.** A level-one heading whose text changes as you
+  scroll is disorienting to announce, so the moving lines are `aria-hidden` and the heading carries a
+  stable `aria-label`.
+
+The enquiry bar is fixed to the bottom of the viewport, and a hero that fills that viewport for
+several screens would otherwise sit underneath it — on a phone it cut the hero's button in half. The
+foot of the hero reserves `--sticky-bar-height` instead, so both stay on screen together rather than
+one having to hide. Measured clearance: 21px on a phone, 27px on desktop, at every scroll position.
 
 ### Why the page transition is pure CSS
 

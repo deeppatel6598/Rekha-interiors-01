@@ -93,6 +93,13 @@
   var ticking = false;
   var tucked = false;
 
+  /* Assigned by the hero scrub in section 11, so the hero rides this same
+     frame instead of registering a scroll listener of its own. */
+  var heroUpdate = null;
+
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function smoothstep(v) { v = clamp01(v); return v * v * (3 - 2 * v); }
+
   function setTucked(next) {
     if (next === tucked) return;
     tucked = next;
@@ -119,11 +126,15 @@
     else if (delta < -4) setTucked(false);
 
     if (stickyBar) {
-      /* Held back until the visitor has actually committed to the page,
-         and stood down again over the footer so it never covers it. */
+      /* Held back until the visitor has actually committed to the page, and
+         stood down again over the footer so it never covers it. It stays up
+         across the scrubbing hero — the hero reserves the bar's height at its
+         foot (see --sticky-bar-height), so the two do not collide. */
       var nearEnd = max - y < 220;
       stickyBar.classList.toggle('is-stowed', y < viewport * 0.6 || nearEnd);
     }
+
+    if (heroUpdate) heroUpdate();
 
     if (!reduced && parallaxEls.length) {
       for (var i = 0; i < parallaxEls.length; i++) {
@@ -151,14 +162,11 @@
 
   /* ==================================================== 5. reveal + stagger */
 
-  /* Splitting a heading into per-word masks. Each word carries its own
-     overflow box so that a heading which wraps to three lines still rises
-     line by line instead of sliding across the line above it. */
-  function splitWords(el) {
-    if (el.dataset.splitDone) return;
-    el.dataset.splitDone = '1';
-
-    var text = el.textContent.replace(/\s+/g, ' ').trim();
+  /* Splitting text into per-word masks. Each word carries its own overflow
+     box so that a heading which wraps to three lines still rises line by
+     line instead of sliding across the line above it. Shared with the hero
+     scrub (section 11), which builds one masked line per scene. */
+  function wordMasks(text) {
     var words = text.split(' ');
     var frag = doc.createDocumentFragment();
 
@@ -176,11 +184,19 @@
       if (i < words.length - 1) frag.appendChild(doc.createTextNode(' '));
     });
 
-    /* The visible text is now a pile of spans, so the original string is
+    return frag;
+  }
+
+  function splitWords(el) {
+    if (el.dataset.splitDone) return;
+    el.dataset.splitDone = '1';
+
+    var text = el.textContent.replace(/\s+/g, ' ').trim();
+    /* The visible text becomes a pile of spans, so the original string is
        restored to assistive technology as a single readable label. */
     el.setAttribute('aria-label', text);
     el.textContent = '';
-    el.appendChild(frag);
+    el.appendChild(wordMasks(text));
   }
 
   if (!reduced) $$('[data-split]').forEach(splitWords);
@@ -673,6 +689,122 @@
       });
     }
   }
+
+  /* ==================================================== 11. hero scroll scrub
+
+     The home page hero pins while the visitor scrolls through it: the
+     photographs cross-dissolve and push in, and the headline changes line by
+     line in step with them.
+
+     Progressive enhancement, same as everything else here. The markup ships
+     scene one as an ordinary <img> inside a one-viewport track, so with this
+     script blocked the hero is simply the hero. Only once every frame has
+     decoded does the track grow to its full height and the scrub switch on —
+     scrubbing an undecoded stack flashes blank scenes, which is the image
+     equivalent of the "hold the poster until the clip paints" rule. */
+
+  (function heroScrub() {
+    var hero = $('[data-hero-scrub]');
+    if (!hero) return;
+
+    var track = $('.hero__track', hero);
+    var frameEl = $('.hero__frame', hero);
+    var layerWrap = $('[data-hero-layers]', hero);
+    var titleEl = $('[data-hero-title]', hero);
+    var hint = $('.hero__scroll-hint', hero);
+    var scenes = DATA.HERO_SCENES || [];
+
+    if (!track || !frameEl || !layerWrap || !titleEl || scenes.length < 2) return;
+    /* Under reduced motion the CSS has already pinned the track to a single
+       viewport; leaving scene one up is the whole behaviour. */
+    if (reduced) return;
+
+    /* A phone has no business decoding four 2000px frames. */
+    var width = window.matchMedia('(min-width: 861px)').matches ? 2000 : 1200;
+
+    var layers = $$('.hero__layer', layerWrap);
+    for (var i = layers.length; i < scenes.length; i++) {
+      var img = doc.createElement('img');
+      img.className = 'hero__layer';
+      img.src = DATA.unsplash(scenes[i].id, width);
+      /* Decorative: scene one in the markup carries the alt text, and a
+         heading that re-describes itself four times is noise to a screen
+         reader. */
+      img.alt = '';
+      img.setAttribute('aria-hidden', 'true');
+      img.decoding = 'async';
+      layerWrap.appendChild(img);
+      layers.push(img);
+    }
+
+    /* The heading keeps one stable accessible name — a level-one heading whose
+       text changes as you scroll is disorienting to announce. The moving
+       lines are decorative. */
+    var full = (titleEl.textContent || '').replace(/\s+/g, ' ').trim();
+    titleEl.setAttribute('aria-label', full);
+    titleEl.textContent = '';
+
+    var lines = scenes.map(function (scene, idx) {
+      var line = doc.createElement('span');
+      line.className = 'hero__line' + (idx === 0 ? ' is-on' : '');
+      line.setAttribute('aria-hidden', 'true');
+      line.appendChild(wordMasks(scene.line));
+      titleEl.appendChild(line);
+      return line;
+    });
+
+    var activeLine = 0;
+    var ready = false;
+
+    Promise.all(layers.map(function (img) {
+      if (!img.decode) return Promise.resolve();
+      return img.decode().catch(function () { /* a failed frame just stays blank */ });
+    })).then(function () {
+      /* Growing the track changes the page height. Only do that while the
+         visitor is still near the top, so the ground never moves under
+         someone who has already started reading. */
+      if (window.pageYOffset > window.innerHeight * 0.5) return;
+      hero.style.setProperty('--hero-scenes', String(scenes.length));
+      hero.classList.add('is-ready');
+      ready = true;
+      onScroll();
+    });
+
+    heroUpdate = function () {
+      if (!ready) return;
+
+      var span = track.offsetHeight - frameEl.offsetHeight;
+      if (span <= 0) return;
+      var p = clamp01(-track.getBoundingClientRect().top / span);
+
+      /* p across the whole hero becomes a position along the scene chain:
+         `base` is the frame currently underneath, `f` how far the next one
+         has dissolved over it. */
+      var t = p * (scenes.length - 1);
+      var base = Math.min(Math.floor(t), scenes.length - 2);
+      var f = smoothstep(t - base);
+
+      for (var i = 0; i < layers.length; i++) {
+        layers[i].style.opacity =
+          i === base ? '1' : i === base + 1 ? String(f) : '0';
+        /* Each frame keeps growing gently across its own life rather than
+           per-scene, so the push-in never visibly resets at a dissolve. */
+        layers[i].style.transform =
+          'scale(' + (1.05 + clamp01((t - i + 1) / 2) * 0.1).toFixed(4) + ')';
+      }
+
+      var want = Math.round(t);
+      if (want !== activeLine) {
+        lines[activeLine].classList.remove('is-on');
+        lines[activeLine].classList.add('is-out');
+        lines[want].classList.remove('is-out');
+        lines[want].classList.add('is-on');
+        activeLine = want;
+      }
+
+      if (hint) hint.style.opacity = String(1 - smoothstep(p * 5));
+    };
+  })();
 
   /* Year in the footer, so the notice never goes stale. */
   $$('[data-year]').forEach(function (el) {
