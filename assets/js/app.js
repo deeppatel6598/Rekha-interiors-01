@@ -711,7 +711,6 @@
     var frameEl = $('.hero__frame', hero);
     var layerWrap = $('[data-hero-layers]', hero);
     var titleEl = $('[data-hero-title]', hero);
-    var hint = $('.hero__scroll-hint', hero);
     var scenes = DATA.HERO_SCENES || [];
 
     if (!track || !frameEl || !layerWrap || !titleEl || scenes.length < 2) return;
@@ -801,8 +800,6 @@
         lines[want].classList.add('is-on');
         activeLine = want;
       }
-
-      if (hint) hint.style.opacity = String(1 - smoothstep(p * 5));
     };
   })();
 

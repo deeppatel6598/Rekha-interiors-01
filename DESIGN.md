@@ -123,7 +123,18 @@ The home hero pins while you scroll through it: the photographs cross-dissolve a
 headline changes line by line in step with them. Scenes live in `HERO_SCENES` in `assets/js/data.js`
 — that array is the whole configuration.
 
-Three decisions worth knowing:
+It runs **full bleed** — edge to edge, the nav sitting on the photograph — rather than in the inset
+rounded card the rest of the site uses. In a box it read as a picture of a room; edge to edge it
+reads as being in one. The headline, tagline and button sit as one centred stack in the middle of
+the frame.
+
+Because that copy sits on the photograph rather than in a frosted card, the hero carries a stronger
+scrim than the rest of the site (~0.5 through the middle band instead of 0.22). Over a blown-out
+white frame that composites to a mid-grey holding **3.7:1** against white type, and the tagline is
+sized and weighted past WCAG's large-text threshold so 3:1 is the bar it has to clear. The button
+brings its own background, so it is unaffected either way.
+
+Three further decisions worth knowing:
 
 - **`position: sticky`, never `fixed`.** The obvious way to build this is a fixed stage over a tall
   spacer, which is what the `scroll-world` engine this borrows from does. Fixed would fight the
