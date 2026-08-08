@@ -1132,16 +1132,19 @@ body[data-sticky="on"] .hero--scrub .hero__content {
    `position: sticky`, never `fixed` — that is what lets this coexist with the
    site's own sticky header and scroll engine instead of fighting them. The
    track's height IS the scroll budget, and it defaults to a single viewport
-   so that with JavaScript off the hero is simply the ordinary hero: one
-   photograph, one headline, no empty scroll. The script raises
-   `--hero-scenes` only once every frame has decoded. */
+   so that with JavaScript off the hero is simply a still photograph and a
+   headline, with no empty scroll. The script raises `--hero-scroll` only
+   once the film has loaded. */
 
 /* Full bleed. The inset rounded card the rest of the site uses made the hero
    read as a picture in a box; edge to edge, with the nav sitting on top of the
    photograph, is what gives it depth. */
 .hero--scrub {
-  --hero-scenes: 1;
-  --hero-scene-h: 100svh;
+  /* Viewport-heights of scroll the film is spread across. Starts at 1 so a
+     page whose script never runs has an ordinary one-screen hero rather than
+     acres of empty scroll; the scrub raises it once the film has loaded. */
+  --hero-scroll: 1;
+  --hero-step-h: 100svh;
   --hero-top: 0px;
   --hero-h: 100svh;
   padding: 0;
@@ -1149,24 +1152,21 @@ body[data-sticky="on"] .hero--scrub .hero__content {
 .hero--scrub .hero__frame {
   max-width: none;
   border-radius: 0;
-}
-
-.hero__track {
-  position: relative;
-  height: calc(var(--hero-scenes) * var(--hero-scene-h));
-}
-
-.hero--scrub .hero__frame {
   position: sticky;
   top: var(--hero-top);
   height: var(--hero-h);
   min-height: 440px;
 }
 
-/* A stronger scrim than the rest of the site uses. The copy now sits in the
-   middle of the frame rather than in a frosted card, so the middle band has to
-   carry the contrast itself: at ~0.5 even a blown-out white photograph
-   composites to a mid-grey that holds 3.7:1 against white type. */
+.hero__track {
+  position: relative;
+  height: calc(var(--hero-scroll) * var(--hero-step-h));
+}
+
+/* A stronger scrim than the rest of the site uses. The copy sits in the middle
+   of the frame rather than in a frosted card, so the middle band has to carry
+   the contrast itself: at ~0.5 even a blown-out white frame composites to a
+   mid-grey that holds 3.7:1 against white type. */
 .hero--scrub .hero__frame::after {
   background: linear-gradient(
     180deg,
@@ -1177,25 +1177,20 @@ body[data-sticky="on"] .hero--scrub .hero__content {
   );
 }
 
-.hero__layers {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-}
-
+/* The film and the poster occupy the same box. The poster is the film's own
+   first frame and stays on top until a real video frame has painted — on iOS a
+   muted video that has never played will not paint a seeked frame, so hiding
+   it any earlier shows an empty hero. */
+.hero__video,
 .hero__layer {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-  transform: scale(1.05);
-  will-change: opacity, transform;
 }
-/* Scene one carries this in the markup, so it is painted before any script
-   runs and stays the poster if none ever does. */
-.hero__layer.is-on { opacity: 1; }
+.hero__layer { z-index: 1; transition: opacity var(--dur-2) var(--ease-standard); }
+.hero__frame.has-video .hero__layer { opacity: 0; }
 
 /* The headline lines share one grid cell, so the heading is as tall as its
    tallest line and the lines stack instead of pushing each other around. */
@@ -1219,23 +1214,22 @@ body[data-sticky="on"] .hero--scrub .hero__content {
 .js .hero__line.is-on .split-word { transform: none; }
 .js .hero__line.is-out .split-word { transform: translate3d(0, -110%, 0); }
 
-
 @media (max-width: 860px) {
   .hero--scrub {
-    /* Shorter dwell per scene: a phone should not need three full flicks to
+    /* Shorter dwell per step: a phone should not need four full flicks to
        clear the hero. */
-    --hero-scene-h: 82svh;
+    --hero-step-h: 82svh;
   }
 }
 
-/* No scrub under reduced motion: the track collapses to one viewport, the
-   first photograph stays up and the headline does not move. */
+/* No scrub under reduced motion: the track collapses to one viewport, the film
+   is never even downloaded, and the poster stays put. */
 @media (prefers-reduced-motion: reduce) {
-  .hero--scrub { --hero-scenes: 1 !important; }
-  .hero__layer { transform: none; }
+  .hero--scrub { --hero-scroll: 1 !important; }
   .js .hero__line .split-word,
   .js .hero__line.is-out .split-word { transform: none; }
 }
+
 
 /* Compact hero used by every page other than home. */
 .page-hero {

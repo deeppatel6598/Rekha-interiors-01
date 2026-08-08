@@ -89,18 +89,17 @@
 <div class="header-spacer"></div>
 
 <main id="main">
-<!-- Scroll-scrubbed hero. Scene one ships in the markup and the track is one
-     viewport tall, so with JavaScript off this is an ordinary hero; the script
-     adds the remaining scenes from HERO_SCENES in assets/js/data.js and grows
-     the track once they have decoded. -->
+<!-- Scroll-scrubbed hero. Scroll drives the walkthrough's playhead. The poster
+     is the film's own first frame and ships in the markup inside a
+     one-viewport track, so with JavaScript off — or under reduced motion —
+     this is an ordinary still hero. The script (assets/js/app.js §11) loads
+     the film from assets/js/data.js and grows the track once it is ready. -->
 <section class="hero hero--scrub" data-hero-scrub>
   <div class="hero__track">
     <div class="hero__frame">
-      <div class="hero__layers" data-hero-layers>
-        <img class="hero__layer is-on" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2000&q=70"
-             alt="Living room in morning light, a Mumbai apartment styled by Samiksha Warde Designs"
-             fetchpriority="high" width="2000" height="857">
-      </div>
+      <img class="hero__layer" src="assets/img/hero-poster.jpg"
+           alt="Walking through a finished home — living room, dining and kitchen"
+           fetchpriority="high" width="1280" height="720">
       <div class="hero__content">
         <div class="hero__inner">
           <h1 class="hero__title" data-hero-title>Turning your house into a home</h1>

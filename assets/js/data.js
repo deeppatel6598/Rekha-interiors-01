@@ -49,42 +49,48 @@
   var ROOMS = ['All rooms', 'Living', 'Kitchen', 'Bedroom', 'Wardrobe', 'Bathroom', 'Kids'];
 
   /* ---------------------------------------------------------------- hero
-     The scroll-scrubbed hero on the home page. As the visitor scrolls
-     through the hero these cross-dissolve and push in, and `line` becomes
-     the headline for that scene.
+     The scroll-scrubbed hero on the home page. Scroll drives the camera:
+     the walkthrough's playhead is tied to how far through the hero you are,
+     so the film only moves while you do — forwards and backwards.
 
-     THIS IS THE ONE PLACE TO SWAP IN THE STUDIO'S REAL TOUR PHOTOS.
-     Replace each `id` with a real photograph and adjust `line` to suit —
-     nothing else needs touching. Four to six wide shots work best, ideally
-     moving through a home in the order someone would walk it. Scene one is
-     also the page's poster: it is the image in the HTML, the one that shows
-     before any script runs, and the only one shown under reduced motion —
-     so make it the strongest frame.
+     Swapping the film means replacing three files together and nothing else:
 
-     Keep `line` short. It is set at the hero size, so anything past about
-     five words wraps to three lines on a phone. */
-  var HERO_SCENES = [
-    {
-      id: '1600585154340-be6161a56a0c',
-      alt: 'Living room in morning light, a Mumbai apartment styled by Samiksha Warde Designs',
-      line: 'Turning your house into a home'
-    },
-    {
-      id: '1600489000022-c2086d79f9d4',
-      alt: 'Modular kitchen with a honed stone counter',
-      line: 'Planned around how you live'
-    },
-    {
-      id: '1595526114035-0d45ed16cfbf',
-      alt: 'A styled bedroom with soft morning light',
-      line: 'Styled to the last shelf'
-    },
-    {
-      id: '1586023492125-27b2c045efd7',
-      alt: 'Open plan living and dining room',
-      line: 'Ready the day you move in'
-    }
-  ];
+       video        the desktop master
+       videoMobile  a lighter, tighter-keyframe encode served to phones
+       poster       the film's ACTUAL first frame
+
+     The poster has to be frame one or the hero visibly jumps when the video
+     paints over it. Both encodes need dense keyframes, because the cost of a
+     seek is however far the decoder has to travel from the last one. What
+     produced the files in assets/video:
+
+       ffmpeg -i src.mp4 -an -vf "unsharp=5:5:0.6:5:5:0.0" \
+         -c:v libx264 -preset slow -crf 21 -pix_fmt yuv420p \
+         -g 8 -keyint_min 8 -sc_threshold 0 -movflags +faststart \
+         assets/video/hero-walkthrough.mp4
+
+       ffmpeg -i src.mp4 -an -vf "scale=720:-2,unsharp=5:5:0.5:5:5:0.0" \
+         -c:v libx264 -preset slow -crf 23 -pix_fmt yuv420p \
+         -g 4 -keyint_min 4 -sc_threshold 0 -movflags +faststart \
+         assets/video/hero-walkthrough-m.mp4
+
+       ffmpeg -i src.mp4 -frames:v 1 -q:v 3 assets/img/hero-poster.jpg
+
+     `lines` are the headlines, spread evenly across the running time. Keep
+     them short — they are set at hero size and wrap to three lines on a
+     phone past about five words. */
+  var HERO = {
+    video: 'assets/video/hero-walkthrough.mp4',
+    videoMobile: 'assets/video/hero-walkthrough-m.mp4',
+    poster: 'assets/img/hero-poster.jpg',
+    alt: 'Walking through a finished home — living room, dining and kitchen',
+    lines: [
+      'Turning your house into a home',
+      'Planned around how you live',
+      'Built around how you cook',
+      'Ready the day you move in'
+    ]
+  };
 
   /* The two groups the projects page filters on. */
   var CATEGORIES = ['All work', 'Full home', 'Styling'];
@@ -151,7 +157,7 @@
     SHOTS: SHOTS,
     ROOMS: ROOMS,
     CATEGORIES: CATEGORIES,
-    HERO_SCENES: HERO_SCENES,
+    HERO: HERO,
     PROJECTS: PROJECTS
   };
 })(window);

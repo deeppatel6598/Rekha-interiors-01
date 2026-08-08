@@ -119,16 +119,33 @@ engine. Adding more animated sections costs no additional listeners.
 
 ### The scrubbing hero
 
-The home hero pins while you scroll through it: the photographs cross-dissolve and push in, and the
-headline changes line by line in step with them. Scenes live in `HERO_SCENES` in `assets/js/data.js`
-— that array is the whole configuration.
+The home hero pins while you scroll through it and ties a walkthrough film's playhead to how far
+through you are — the camera moves only while you do, in both directions — while the headline
+changes with it. It is configured by `HERO` in `assets/js/data.js`.
 
-It runs **full bleed** — edge to edge, the nav sitting on the photograph — rather than in the inset
+Three things make video scrubbing actually work, and all three are easy to get wrong:
+
+- **The film is fetched as a Blob and played from an object URL.** Plenty of static hosts do not
+  serve HTTP byte-range requests — this repo's own dev server does not — and without ranges
+  `video.seekable` pins to `[0,0]`, every seek clamps to frame zero, and the film looks frozen. A
+  blob is always fully seekable.
+- **Seeks are coalesced.** Setting `currentTime` again while the decoder is still seeking queues up
+  work it cannot keep pace with, and a fast flick stalls the picture. Only the newest target is kept.
+- **The poster stays up until a real frame has painted**, and the element is primed on the first
+  interaction. On iOS a muted video that has never been played will not paint a seeked frame, so
+  hiding the poster on metadata alone shows an empty hero.
+
+The encodes matter as much as the code: a seek costs however far the decoder must travel from the
+last keyframe, so the desktop master is cut at `-g 8` and the phone encode at `-g 4`. Dense
+keyframes cost about 700KB over a default GOP here, and they are the difference between scrubbing
+and stuttering.
+
+It runs **full bleed** — edge to edge, the nav sitting on the film — rather than in the inset
 rounded card the rest of the site uses. In a box it read as a picture of a room; edge to edge it
 reads as being in one. The headline, tagline and button sit as one centred stack in the middle of
 the frame.
 
-Because that copy sits on the photograph rather than in a frosted card, the hero carries a stronger
+Because that copy sits on the film rather than in a frosted card, the hero carries a stronger
 scrim than the rest of the site (~0.5 through the middle band instead of 0.22). Over a blown-out
 white frame that composites to a mid-grey holding **3.7:1** against white type, and the tagline is
 sized and weighted past WCAG's large-text threshold so 3:1 is the bar it has to clear. The button
