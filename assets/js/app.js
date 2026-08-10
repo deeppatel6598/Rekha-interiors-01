@@ -692,16 +692,29 @@
 
   /* ==================================================== 11. hero scroll scrub
 
-     The home page hero pins while the visitor scrolls through it: the
-     photographs cross-dissolve and push in, and the headline changes line by
-     line in step with them.
+     The home page hero ties a walkthrough film's playhead to how far through
+     the hero you have scrolled, so the camera only moves while you do — in
+     both directions — and the headline changes with it.
 
-     Progressive enhancement, same as everything else here. The markup ships
-     scene one as an ordinary <img> inside a one-viewport track, so with this
-     script blocked the hero is simply the hero. Only once every frame has
-     decoded does the track grow to its full height and the scrub switch on —
-     scrubbing an undecoded stack flashes blank scenes, which is the image
-     equivalent of the "hold the poster until the clip paints" rule. */
+     Three things make scrubbing actually work, and all three are easy to get
+     wrong:
+
+     1. The film is fetched as a Blob and played from an object URL. Plenty of
+        static hosts do not serve HTTP byte-range requests (this repo's own
+        dev server does not), and without ranges `video.seekable` pins to
+        [0,0] and every seek clamps to frame zero — the film looks frozen. A
+        blob is always fully seekable.
+     2. Seeks are coalesced. Setting `currentTime` again while the decoder is
+        still seeking queues work it cannot keep up with, and a fast flick
+        stalls the picture. Only the newest target is kept.
+     3. The poster stays up until a real frame has painted, and the element is
+        primed on first interaction. On iOS a muted video that has never been
+        played will not paint a seeked frame, so hiding the poster on metadata
+        alone shows an empty hero.
+
+     Progressive enhancement as everywhere else: the poster ships in the HTML
+     inside a one-viewport track, so with this script blocked, or under
+     reduced motion, the hero is simply a still photograph and a headline. */
 
   (function heroScrub() {
     var hero = $('[data-hero-scrub]');
@@ -709,33 +722,16 @@
 
     var track = $('.hero__track', hero);
     var frameEl = $('.hero__frame', hero);
-    var layerWrap = $('[data-hero-layers]', hero);
     var titleEl = $('[data-hero-title]', hero);
-    var hint = $('.hero__scroll-hint', hero);
-    var scenes = DATA.HERO_SCENES || [];
+    var poster = $('.hero__layer', hero);
+    var conf = DATA.HERO || {};
+    var lines = conf.lines || [];
 
-    if (!track || !frameEl || !layerWrap || !titleEl || scenes.length < 2) return;
+    if (!track || !frameEl || !titleEl || !conf.video || lines.length < 2) return;
     /* Under reduced motion the CSS has already pinned the track to a single
-       viewport; leaving scene one up is the whole behaviour. */
+       viewport; leaving the poster up is the whole behaviour, and we never
+       pay for the video download at all. */
     if (reduced) return;
-
-    /* A phone has no business decoding four 2000px frames. */
-    var width = window.matchMedia('(min-width: 861px)').matches ? 2000 : 1200;
-
-    var layers = $$('.hero__layer', layerWrap);
-    for (var i = layers.length; i < scenes.length; i++) {
-      var img = doc.createElement('img');
-      img.className = 'hero__layer';
-      img.src = DATA.unsplash(scenes[i].id, width);
-      /* Decorative: scene one in the markup carries the alt text, and a
-         heading that re-describes itself four times is noise to a screen
-         reader. */
-      img.alt = '';
-      img.setAttribute('aria-hidden', 'true');
-      img.decoding = 'async';
-      layerWrap.appendChild(img);
-      layers.push(img);
-    }
 
     /* The heading keeps one stable accessible name — a level-one heading whose
        text changes as you scroll is disorienting to announce. The moving
@@ -744,65 +740,111 @@
     titleEl.setAttribute('aria-label', full);
     titleEl.textContent = '';
 
-    var lines = scenes.map(function (scene, idx) {
+    var lineEls = lines.map(function (text, idx) {
       var line = doc.createElement('span');
       line.className = 'hero__line' + (idx === 0 ? ' is-on' : '');
       line.setAttribute('aria-hidden', 'true');
-      line.appendChild(wordMasks(scene.line));
+      line.appendChild(wordMasks(text));
       titleEl.appendChild(line);
       return line;
     });
 
     var activeLine = 0;
+    var video = null;
+    var duration = 0;
     var ready = false;
+    var seeking = false;
+    var queued = null;
+    var primed = false;
 
-    Promise.all(layers.map(function (img) {
-      if (!img.decode) return Promise.resolve();
-      return img.decode().catch(function () { /* a failed frame just stays blank */ });
-    })).then(function () {
-      /* Growing the track changes the page height. Only do that while the
-         visitor is still near the top, so the ground never moves under
-         someone who has already started reading. */
-      if (window.pageYOffset > window.innerHeight * 0.5) return;
-      hero.style.setProperty('--hero-scenes', String(scenes.length));
-      hero.classList.add('is-ready');
-      ready = true;
-      onScroll();
+    function seek(t) {
+      if (seeking) { queued = t; return; }
+      seeking = true;
+      try { video.currentTime = t; } catch (e) { seeking = false; }
+    }
+
+    function onSeeked() {
+      seeking = false;
+      if (queued !== null) {
+        var next = queued;
+        queued = null;
+        seek(next);
+      }
+    }
+
+    /* iOS will not paint a seeked frame on a video that has never played, so
+       the first real interaction gets it going and immediately pauses it. */
+    function prime() {
+      if (primed || !video) return;
+      primed = true;
+      var play = video.play();
+      if (play && play.then) play.then(function () { video.pause(); }, function () {});
+      else { try { video.pause(); } catch (e) {} }
+    }
+    ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(function (evt) {
+      window.addEventListener(evt, prime, { once: true, passive: true });
     });
 
+    var src = (window.matchMedia('(max-width: 860px)').matches && conf.videoMobile)
+      ? conf.videoMobile
+      : conf.video;
+
+    fetch(BASE + src)
+      .then(function (r) { return r.ok ? r.blob() : Promise.reject(new Error(r.status)); })
+      .then(function (blob) {
+        video = doc.createElement('video');
+        video.className = 'hero__video';
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.preload = 'auto';
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('aria-hidden', 'true');
+        video.src = URL.createObjectURL(blob);
+
+        video.addEventListener('loadedmetadata', function () {
+          duration = video.duration || 0;
+          if (!duration) return;
+          /* Growing the track changes the page height, so only do it while
+             the visitor is still near the top — the ground must not move
+             under someone who has started reading. */
+          if (window.pageYOffset > window.innerHeight * 0.5) return;
+          hero.style.setProperty('--hero-scroll', String(lines.length));
+          hero.classList.add('is-ready');
+          ready = true;
+          onScroll();
+        });
+        /* Only hide the poster once a frame has genuinely painted. */
+        video.addEventListener('seeked', function () {
+          frameEl.classList.add('has-video');
+        }, { once: true });
+        video.addEventListener('seeked', onSeeked);
+        video.addEventListener('error', onSeeked);
+
+        frameEl.insertBefore(video, frameEl.firstChild);
+      })
+      .catch(function () { /* the poster is already up and stays up */ });
+
     heroUpdate = function () {
-      if (!ready) return;
+      if (!ready || !video) return;
 
       var span = track.offsetHeight - frameEl.offsetHeight;
       if (span <= 0) return;
       var p = clamp01(-track.getBoundingClientRect().top / span);
 
-      /* p across the whole hero becomes a position along the scene chain:
-         `base` is the frame currently underneath, `f` how far the next one
-         has dissolved over it. */
-      var t = p * (scenes.length - 1);
-      var base = Math.min(Math.floor(t), scenes.length - 2);
-      var f = smoothstep(t - base);
+      /* Stop a hair short of the very end: seeking exactly to `duration` can
+         land past the last decodable frame and blank the picture. */
+      seek(Math.min(p * duration, Math.max(duration - 0.05, 0)));
 
-      for (var i = 0; i < layers.length; i++) {
-        layers[i].style.opacity =
-          i === base ? '1' : i === base + 1 ? String(f) : '0';
-        /* Each frame keeps growing gently across its own life rather than
-           per-scene, so the push-in never visibly resets at a dissolve. */
-        layers[i].style.transform =
-          'scale(' + (1.05 + clamp01((t - i + 1) / 2) * 0.1).toFixed(4) + ')';
-      }
-
-      var want = Math.round(t);
+      var want = Math.round(p * (lines.length - 1));
       if (want !== activeLine) {
-        lines[activeLine].classList.remove('is-on');
-        lines[activeLine].classList.add('is-out');
-        lines[want].classList.remove('is-out');
-        lines[want].classList.add('is-on');
+        lineEls[activeLine].classList.remove('is-on');
+        lineEls[activeLine].classList.add('is-out');
+        lineEls[want].classList.remove('is-out');
+        lineEls[want].classList.add('is-on');
         activeLine = want;
       }
-
-      if (hint) hint.style.opacity = String(1 - smoothstep(p * 5));
     };
   })();
 

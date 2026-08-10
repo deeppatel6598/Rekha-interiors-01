@@ -1072,20 +1072,48 @@ input, select, textarea, button { font-family: var(--font-text); max-width: 100%
 .hero__content > * { pointer-events: auto; }
 
 /* The enquiry bar is fixed to the bottom of the viewport and the scrubbing
-   hero fills that viewport for several screens, so the hero's own card would
-   sit underneath it — on a phone it cut the button in half. The foot of the
-   hero reserves the bar's exact height instead, which lets both stay on
-   screen together rather than one having to hide. Only on pages that carry
-   the bar. */
+   hero fills that viewport for several screens, so hero content near the foot
+   would sit underneath it. Reserving the bar's exact height lets both stay on
+   screen together rather than one having to hide. Only on pages with the bar. */
 body[data-sticky="on"] .hero--scrub .hero__content {
   padding-bottom: calc(
     var(--sticky-bar-height) + env(safe-area-inset-bottom, 0px) + 0.75rem
   );
 }
 
+/* Everything sits in the middle of the frame — headline, line, button as one
+   centred stack. */
+.hero--scrub .hero__content {
+  display: grid;
+  place-items: center;
+}
+
+.hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 2.4vw, 1.5rem);
+  text-align: center;
+  /* Not a `ch` measure: `ch` resolves against this element's own 17px font
+     size, which throttled the 84px headline to about 190px and broke it over
+     five lines. The headline's own `text-wrap: balance` does the line breaking. */
+  max-width: min(92vw, 60rem);
+}
+
+.hero__tagline {
+  /* Sized and weighted to clear WCAG's large-text threshold, because it is
+     white on a photograph: at this size 3:1 applies, and the hero scrim below
+     holds ~3.7:1 even over a blown-out white frame. */
+  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--on-dark);
+  text-shadow: 0 1px 18px rgba(9, 12, 11, 0.55);
+}
+
 .hero__title {
-  margin: clamp(3.5rem, 7vw, 5rem) auto 0;
-  max-width: 18ch;
+  margin: 0;
   text-align: center;
   font-family: var(--font-display);
   font-weight: var(--fw-hero);
@@ -1096,58 +1124,6 @@ body[data-sticky="on"] .hero--scrub .hero__content {
   text-wrap: balance;
 }
 
-.hero__card {
-  margin-top: auto;
-  /* Hugs its content rather than always filling 420px — the card now holds
-     one short line, and a stretched box would sit half empty over the photo. */
-  width: fit-content;
-  max-width: 420px;
-  background: color-mix(in srgb, var(--canvas-parchment) 88%, transparent);
-  backdrop-filter: var(--blur-frosted);
-  -webkit-backdrop-filter: var(--blur-frosted);
-  border-radius: var(--radius-lg);
-  padding: clamp(1rem, 3vw, 1.5rem);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  align-items: flex-start;
-  color: var(--ink);
-}
-.hero__card .prose { color: var(--ink-muted-80); }
-
-.hero__scroll-hint {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(1.25rem, 3.5vw, 2.5rem);
-  transform: translateX(-50%);
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: var(--on-dark);
-  font-size: var(--fs-fine-print);
-  letter-spacing: var(--ls-eyebrow);
-  text-transform: uppercase;
-  opacity: 0.86;
-  pointer-events: none;
-}
-.hero__scroll-hint::after {
-  content: "";
-  width: 1px;
-  height: 34px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
-  animation: hint-drop 2.4s var(--ease-standard) infinite;
-  transform-origin: 50% 0;
-}
-@keyframes hint-drop {
-  0%, 100% { transform: scaleY(0.4); opacity: 0.3; }
-  45% { transform: scaleY(1); opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero__scroll-hint::after { animation: none; transform: scaleY(1); }
-}
-
 /* --- scroll-scrubbed hero -------------------------------------------------
    The hero pins while the visitor scrolls through it: the photographs
    cross-dissolve and push in, and the headline changes line by line in step
@@ -1156,48 +1132,65 @@ body[data-sticky="on"] .hero--scrub .hero__content {
    `position: sticky`, never `fixed` — that is what lets this coexist with the
    site's own sticky header and scroll engine instead of fighting them. The
    track's height IS the scroll budget, and it defaults to a single viewport
-   so that with JavaScript off the hero is simply the ordinary hero: one
-   photograph, one headline, no empty scroll. The script raises
-   `--hero-scenes` only once every frame has decoded. */
+   so that with JavaScript off the hero is simply a still photograph and a
+   headline, with no empty scroll. The script raises `--hero-scroll` only
+   once the film has loaded. */
 
+/* Full bleed. The inset rounded card the rest of the site uses made the hero
+   read as a picture in a box; edge to edge, with the nav sitting on top of the
+   photograph, is what gives it depth. */
 .hero--scrub {
-  --hero-scenes: 1;
-  --hero-scene-h: 100svh;
-  --hero-top: var(--nav-height);
-  --hero-h: calc(100svh - var(--nav-height) - clamp(1rem, 3vw, 1.5rem));
+  /* Viewport-heights of scroll the film is spread across. Starts at 1 so a
+     page whose script never runs has an ordinary one-screen hero rather than
+     acres of empty scroll; the scrub raises it once the film has loaded. */
+  --hero-scroll: 1;
+  --hero-step-h: 100svh;
+  --hero-top: 0px;
+  --hero-h: 100svh;
+  padding: 0;
 }
-
-.hero__track {
-  position: relative;
-  height: calc(var(--hero-scenes) * var(--hero-scene-h));
-}
-
 .hero--scrub .hero__frame {
+  max-width: none;
+  border-radius: 0;
   position: sticky;
   top: var(--hero-top);
   height: var(--hero-h);
   min-height: 440px;
 }
 
-.hero__layers {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
+.hero__track {
+  position: relative;
+  height: calc(var(--hero-scroll) * var(--hero-step-h));
 }
 
+/* A stronger scrim than the rest of the site uses. The copy sits in the middle
+   of the frame rather than in a frosted card, so the middle band has to carry
+   the contrast itself: at ~0.5 even a blown-out white frame composites to a
+   mid-grey that holds 3.7:1 against white type. */
+.hero--scrub .hero__frame::after {
+  background: linear-gradient(
+    180deg,
+    rgba(9, 12, 11, 0.58) 0%,
+    rgba(9, 12, 11, 0.46) 28%,
+    rgba(9, 12, 11, 0.50) 62%,
+    rgba(9, 12, 11, 0.70) 100%
+  );
+}
+
+/* The film and the poster occupy the same box. The poster is the film's own
+   first frame and stays on top until a real video frame has painted — on iOS a
+   muted video that has never played will not paint a seeked frame, so hiding
+   it any earlier shows an empty hero. */
+.hero__video,
 .hero__layer {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-  transform: scale(1.05);
-  will-change: opacity, transform;
 }
-/* Scene one carries this in the markup, so it is painted before any script
-   runs and stays the poster if none ever does. */
-.hero__layer.is-on { opacity: 1; }
+.hero__layer { z-index: 1; transition: opacity var(--dur-2) var(--ease-standard); }
+.hero__frame.has-video .hero__layer { opacity: 0; }
 
 /* The headline lines share one grid cell, so the heading is as tall as its
    tallest line and the lines stack instead of pushing each other around. */
@@ -1221,26 +1214,22 @@ body[data-sticky="on"] .hero--scrub .hero__content {
 .js .hero__line.is-on .split-word { transform: none; }
 .js .hero__line.is-out .split-word { transform: translate3d(0, -110%, 0); }
 
-.hero__scroll-hint { transition: opacity var(--dur-2) var(--ease-standard); }
-
 @media (max-width: 860px) {
   .hero--scrub {
-    /* Shorter dwell per scene: a phone should not need three full flicks to
+    /* Shorter dwell per step: a phone should not need four full flicks to
        clear the hero. */
-    --hero-scene-h: 82svh;
-    --hero-top: clamp(0.75rem, 3vw, 1rem);
-    --hero-h: calc(100svh - clamp(1.5rem, 6vw, 2rem));
+    --hero-step-h: 82svh;
   }
 }
 
-/* No scrub under reduced motion: the track collapses to one viewport, the
-   first photograph stays up and the headline does not move. */
+/* No scrub under reduced motion: the track collapses to one viewport, the film
+   is never even downloaded, and the poster stays put. */
 @media (prefers-reduced-motion: reduce) {
-  .hero--scrub { --hero-scenes: 1 !important; }
-  .hero__layer { transform: none; }
+  .hero--scrub { --hero-scroll: 1 !important; }
   .js .hero__line .split-word,
   .js .hero__line.is-out .split-word { transform: none; }
 }
+
 
 /* Compact hero used by every page other than home. */
 .page-hero {
@@ -2186,8 +2175,6 @@ a.info-card:hover {
      reserved, or their first heading sits under the floating pill. */
   body:not([data-hero="full"]) .header-spacer { display: block; }
 
-  .hero__title { margin-top: clamp(4.5rem, 13vw, 6rem); }
-  .hero__scroll-hint { display: none; }
 
   /* Clears the floating glass header, which sits 10px from the top and
      stands 74px tall, so no page title starts underneath it. */
@@ -2255,7 +2242,6 @@ a.info-card:hover {
   .sticky-bar,
   .lightbox,
   .scroll-progress,
-  .hero__scroll-hint { display: none !important; }
   body { padding-bottom: 0; }
   .js [data-reveal] { opacity: 1 !important; transform: none !important; clip-path: none !important; }
 }

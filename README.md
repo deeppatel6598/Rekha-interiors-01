@@ -48,11 +48,16 @@ wrong, `services.html` and the FAQ are where to change it.
 
 ## Motion
 
-**The home hero scrubs on scroll.** It pins while you scroll through it, cross-dissolving and
-pushing in through its photographs while the headline changes line by line. The scenes are the
-`HERO_SCENES` array in `assets/js/data.js` — swap the photos and lines there and nothing else needs
-touching. With JavaScript off, or under `prefers-reduced-motion`, it collapses to an ordinary
-one-photograph hero rather than leaving empty scroll behind.
+**The home hero is a scroll-scrubbed walkthrough.** Scroll drives the film's playhead, so the camera
+only moves while you do — forwards and backwards — and the headline changes with it. It is
+configured by the `HERO` object in `assets/js/data.js`. With JavaScript off, or under
+`prefers-reduced-motion`, it collapses to an ordinary still hero (and never downloads the film).
+
+Swapping the film means replacing three files together — the desktop encode, the phone encode, and
+a poster that is the film's **actual first frame**, or the hero visibly jumps when the video paints
+over it. Both encodes need dense keyframes, because a seek costs however far the decoder has to
+travel from the last one. The exact commands that produced `assets/video/` are in the comment above
+`HERO` in `assets/js/data.js`.
 
 Scroll animations elsewhere run in both directions: an element that leaves the viewport re-arms and
 replays its entrance from whichever edge it left by, so scrolling back up animates rather than
@@ -109,11 +114,11 @@ sequential heading levels.
   mark; every page and the favicon reference that one file.
 - **Photography.** Every interior shot is an Unsplash placeholder. Image ids live in
   `assets/js/data.js` for the grids and gallery, and inline in each page for the fixed images.
-- **Hero scenes.** The scrubbing hero runs on four placeholder photographs in `HERO_SCENES`
-  (`assets/js/data.js`). Replace them with the studio's own tour photos — four to six wide shots,
-  ideally moving through a home in the order someone would walk it. Scene one is also the page's
-  poster (it is the image in the HTML and the only one shown under reduced motion), so make it the
-  strongest frame. Keep each `line` to about five words; it is set at hero size.
+- **The hero film is AI-generated.** `assets/video/hero-walkthrough.mp4` came from Gemini, not from
+  a camera in a finished flat. It reads as an interior render, which is completely ordinary in
+  design marketing — but do not caption it as a specific completed project, and replace it with
+  footage of a real handover when there is some. The headlines over it are brand statements, not
+  project claims, deliberately.
 - **The enquiry form does not send anything yet.** Submitting it validates the fields and shows the
   confirmation panel, but no back end is wired up. Point it at a form service (Formspree, Netlify
   Forms, Basin) or your own endpoint.
